@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require('dotenv').config();
 const app = express();
+const db = require('./app/config/db.config');
 var corsOptions = {
   origin: "http://localhost:8081"
 };
@@ -12,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to piicante application." });
+  res.json({ message: "Welcome to piiquante application." });
 });
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
