@@ -3,6 +3,7 @@ const cors = require("cors");
 require('dotenv').config();
 const app = express();
 const db = require('./app/config/db.config');
+const userRoutes = require('./routers/user');
 var corsOptions = {
   origin: "http://localhost:8081"
 };
@@ -21,6 +22,8 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
+// route for users
+app.use('/api/auth', userRoutes);
 
 /*tests models vs bd
 const Sauce = require("./models/sauce");
