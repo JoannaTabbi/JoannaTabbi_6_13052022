@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 router.get("/:id", auth, sauceCtrl.getOneSauce);
 router.get("/", auth, sauceCtrl.getAllSauces);
+//router.post("/", sauceCtrl.createSauce);
 
 module.exports = router;
 
