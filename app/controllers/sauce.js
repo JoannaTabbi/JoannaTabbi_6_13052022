@@ -13,7 +13,7 @@ exports.getAllSauces = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }))
 };
 
-/* exports.createSauce = (req, res, next) => {
+exports.createSauce = (req, res, next) => {
   delete req.body._id;
   const sauce = new Sauce({
   ...req.body
@@ -21,4 +21,4 @@ exports.getAllSauces = (req, res, next) => {
   sauce.save()
   .then(newSauce => res.status(201).json({newSauce}))
   .catch(error => res.status(400).json({error}))
-} */
+}
