@@ -12,7 +12,10 @@ exports.signup = (req, res, next) => {
       });
       user
         .save()
-        .then(() => res.status(201).json({ message: "User signed up" }))
+        .then((user) => res.status(201).json({ 
+          userId: user._id,
+          email: user.email
+         }))
         .catch((error) => res.status(400).json({ error }));
     })
     .catch((error) => res.status(500).json({ error }));
@@ -34,7 +37,7 @@ exports.login = (req, res, next) => {
             userId: user._id,
             token: jwt.sign(
                 { userId: user._id },
-                'RANDOM-TOKEN-SECRET',
+                process.env.TOKEN_SECRET,
                 { expiresIn: '24h'}
             ),
           });

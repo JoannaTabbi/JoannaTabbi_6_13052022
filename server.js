@@ -2,8 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require('dotenv').config();
 const app = express();
+const router = require('./app/routes/index');
 
-// setting headers to avoir CORS errors
+// setting headers for CORS errors
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -18,7 +19,6 @@ app.use((req, res, next) => {
 });
 
 const db = require('./app/config/db.config');
-const userRoutes = require('./routers/user');
 var corsOptions = {
   origin: "http://localhost:4200"
 };
@@ -28,27 +28,21 @@ app.use(cors(corsOptions));
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to piiquante application." });
-});
+app.use('/api', router);
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
-// route for users
-app.use('/api/auth', userRoutes);
-
 module.exports = app;
 
-/*tests models vs bd
-const Sauce = require("./models/sauce");
+//tests models vs bd
+/*const Sauce = require("./models/sauce");
 
 app.get('/api/sauces/:id', (req, res, next) => {
   const sauce = new Sauce({
-  userId: "6283b33abcb05184fd1cc34c",  
+  userId: "6284215b0aa202e0b7ea01cd",  
   name: "Paul's sauce",
   manufacturer: "Vegga",
   description: "delicious",
@@ -59,7 +53,7 @@ app.get('/api/sauces/:id', (req, res, next) => {
   .then(result => res.send(result))
   .catch(error => console.log(error))
 })
-
+/*
 const User = require("./models/user");
 
 app.use('/api/auth/signup', (req, res, next) => {
