@@ -1,5 +1,6 @@
 const Sauce = require("../models/sauce");
 
+//displays a single sauce
 exports.getOneSauce = (req, res, next) => {
   const id = req.params.id;
   Sauce.findById(id)
@@ -7,12 +8,14 @@ exports.getOneSauce = (req, res, next) => {
     .catch((error) => res.status(404).json({ error }));
 };
 
+//displays all the sauces
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
     .then((sauces) => res.status(200).json(sauces))
     .catch((error) => res.status(400).json({ error }));
 };
 
+// adds a new sauce
 exports.createSauce = (req, res, next) => {
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
@@ -28,6 +31,7 @@ exports.createSauce = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
+// control user's vote (like / dislike / vote reset)
 exports.likeSauce = (req, res, next) => {
   /*frontend req: {
    "userId" : "",
@@ -43,11 +47,29 @@ exports.likeSauce = (req, res, next) => {
       const userId = req.body.userId;
       const usersLikedExists = sauceFound.usersLiked.includes(userId);
       const usersDislikedExists = sauceFound.usersDisliked.includes(userId);
-      const userChoice = true;
 
-      switch (userChoice) {
+      switch (true) {
+        //user likes, usersLiked and usersDisliked already exist =>  removes dislike
+        case usersLikedExists && like && usersDislikedExists:
+        //user resets his vote, dislike already exists => removes dislike
+        case !usersLikedExists && voteReset && usersDislikedExists: {
+          Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $inc: { dislikes: -1 },
+              $pull: { usersDisliked: userId },
+            }
+          )
+            .then(() => res.status(201).json({ message: "dislike removed" }))
+            .catch((error) => res.status(400).json({ error }));
+          break;
+        }
+        //user likes, userLiked already exists => no change
+        case usersLikedExists && like && !usersDislikedExists: {
+          throw "The user has already liked this sauce";
+        }
+        //user likes, userDisliked already exists => adds like and removes dislike
         case !usersLikedExists && like && usersDislikedExists: {
-          // user who didn't liked yet, likes and removes his dislike
           Sauce.updateOne(
             { _id: req.params.id },
             {
@@ -57,13 +79,13 @@ exports.likeSauce = (req, res, next) => {
             }
           )
             .then(() =>
-              res.status(201).json({ message: "like ajouté, dislike enlevé" })
+              res.status(201).json({ message: "like added, dislike removed" })
             )
             .catch((error) => res.status(400).json({ error }));
           break;
         }
+        //user likes, neither userLiked nor userDisliked exist yet => adds like
         case !usersLikedExists && like && !usersDislikedExists: {
-          //user who didn't liked yet, likes
           Sauce.updateOne(
             { _id: req.params.id },
             {
@@ -71,38 +93,14 @@ exports.likeSauce = (req, res, next) => {
               $push: { usersLiked: userId },
             }
           )
-            .then(() => res.status(201).json({ message: "like ajouté" }))
+            .then(() => res.status(201).json({ message: "like added" }))
             .catch((error) => res.status(400).json({ error }));
           break;
         }
-        case !usersLikedExists && voteReset && usersDislikedExists: {
-          //user who didn't liked yet, removes his dislike
-          Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $inc: { dislikes: -1 },
-              $pull: { usersDisliked: userId },
-            }
-          )
-            .then(() => res.status(201).json({ message: "dislike enlevé" }))
-            .catch((error) => res.status(400).json({ error }));
-          break;
-        }
-        case !usersLikedExists && dislike && !usersDislikedExists: {
-          //user who didn't liked yet, dislikes
-          Sauce.updateOne(
-            { _id: req.params.id },
-            {
-              $inc: { dislikes: 1 },
-              $push: { usersDisliked: userId },
-            }
-          )
-            .then(() => res.status(201).json({ message: "dislike ajouté" }))
-            .catch((error) => res.status(400).json({ error }));
-          break;
-        }
+        //user dislikes, userLiked and userDisliked already exist => removes like
+        case usersLikedExists && dislike && usersDislikedExists:
+        //user resets his vote, usersLiked already exists => removes like
         case usersLikedExists && voteReset && !usersDislikedExists: {
-          //user who liked, removes his like
           Sauce.updateOne(
             { _id: req.params.id },
             {
@@ -110,12 +108,12 @@ exports.likeSauce = (req, res, next) => {
               $pull: { usersLiked: userId },
             }
           )
-            .then(() => res.status(201).json({ message: "like enlevé" }))
+            .then(() => res.status(201).json({ message: "like removed" }))
             .catch((error) => res.status(400).json({ error }));
           break;
         }
+        //user dislikes, userLiked already exists => removes like, adds dislike
         case usersLikedExists && dislike && !usersDislikedExists: {
-          // user who liked, dislikes and removes his like
           Sauce.updateOne(
             { _id: req.params.id },
             {
@@ -125,15 +123,54 @@ exports.likeSauce = (req, res, next) => {
             }
           )
             .then(() =>
-              res.status(201).json({ message: "dislike ajouté, like enlevé" })
+              res.status(201).json({ message: "dislike added, like removed" })
             )
             .catch((error) => res.status(400).json({ error }));
           break;
         }
+        //user dislikes, userDisliked already exists => no change
+        case !usersLikedExists && dislike && usersDislikedExists: {
+          throw "The user has already disliked this sauce!";
+        }
+        //user dislikes, neither userLiked nor userDisliked exist yet => adds dislike
+        case !usersLikedExists && dislike && !usersDislikedExists: {
+          Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $inc: { dislikes: 1 },
+              $push: { usersDisliked: userId },
+            }
+          )
+            .then(() => res.status(201).json({ message: "dislike added" }))
+            .catch((error) => res.status(400).json({ error }));
+          break;
+        }
+        //user resets his vote, userLiked and userDisliked already exist => removes like and dislike
+        case usersLikedExists && voteReset && usersDislikedExists: {
+          Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $inc: { likes: -1, dislikes: -1 },
+              $pull: { usersLiked: userId, usersDisliked: userId },
+            }
+          )
+            .then(() =>
+              res.status(201).json({ message: "like and dislike removed" })
+            )
+            .catch((error) => res.status(400).json({ error }));
+          break;
+        }
+        //user resets his vote, neither userLiked nor userDisliked exist yet => no change
+        case !usersLikedExists && voteReset && !usersDislikedExists: {
+          throw "User's vote is already reset";
+        }
+        //the vote isn't a number equal to 1, 0 or -1
+        case !like || !dislike || !voteReset: {
+          throw "Error : 'like' value must be a number equal to 1, 0 or -1";
+        }
         default:
-          throw "Une erreur est arrivée";
+          throw "Unknown error";
       }
     })
-
     .catch((error) => res.status(404).json({ error }));
 };
