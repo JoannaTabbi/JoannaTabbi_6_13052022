@@ -1,3 +1,4 @@
+const fs = require('fs');
 const Sauce = require("../models/sauce");
 
 //displays a single sauce
@@ -198,4 +199,35 @@ exports.modifySauce = (req, res, next) => {
   )
     .then(() => res.status(200).json({ message: "Modified !" }))
     .catch((error) => res.status(400).json({ error }));
+};
+
+//deletes one sauce
+
+exports.deleteSauce = (req, res, next) => {
+  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    if (!sauce) {
+      res.status(404).json({
+        error: new Error("No such Sauce!"),
+      });
+    }
+    if (sauce.userId !== req.auth.userId) {
+      res.status(403).json({
+        error: new Error("Unauthorized request!"),
+      });
+    }
+    const filename = sauce.imageUrl.split("/images/")[1];
+    fs.unlink(`images/${filename}`, () => {
+      Sauce.deleteOne({ _id: req.params.id })
+        .then(() => {
+          res.status(200).json({
+            message: "Deleted!",
+          });
+        })
+        .catch((error) => {
+          res.status(400).json({
+            error: error,
+          });
+        });
+    });
+  });
 };
