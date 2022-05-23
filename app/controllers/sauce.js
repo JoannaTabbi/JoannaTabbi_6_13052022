@@ -1,4 +1,5 @@
 const fs = require("fs");
+const sauce = require("../models/sauce");
 const Sauce = require("../models/sauce");
 
 //displays a single sauce
@@ -40,7 +41,7 @@ exports.createSauce = (req, res, next) => {
   const sauce = new Sauce({
     ...sauceObject,
     userId: req.auth.userId,
-    imageUrl: `/images/${req.file.filename}`,
+    imageUrl: `/images/${req.file.filename}`
   });
   sauce
     .save()
@@ -56,7 +57,6 @@ cette fonction met à jour le vote du client pour une sauce donnée en fonction 
 */
 exports.likeSauce = (req, res, next) => {
   /*frontend req: {
-   "userId" : "",
    "like" : ""
  }
 */
@@ -71,13 +71,13 @@ exports.likeSauce = (req, res, next) => {
         case -1:
           toChange = {
             $inc: { dislikes: 1 },
-            $push: { usersDisliked: userId },
+            $push: { usersDisliked: userId }
           };
           if (usersLikedExists) {
             toChange = {
               $inc: { dislikes: 1, likes: -1 },
               $push: { usersDisliked: userId },
-              $pull: { usersLiked: userId },
+              $pull: { usersLiked: userId }
             };
           }
           if (!usersDislikedExists) {
@@ -96,7 +96,7 @@ exports.likeSauce = (req, res, next) => {
               { _id: id },
               (toChange = {
                 $inc: { dislikes: -1, likes: -1 },
-                $pull: { usersLiked: userId, usersDisliked: userId },
+                $pull: { usersLiked: userId, usersDisliked: userId }
               }),
               { new: true }
             )
@@ -107,7 +107,7 @@ exports.likeSauce = (req, res, next) => {
               { _id: id },
               (toChange = {
                 $inc: { likes: -1 },
-                $pull: { usersLiked: userId },
+                $pull: { usersLiked: userId }
               }),
               { new: true }
             )
@@ -118,7 +118,7 @@ exports.likeSauce = (req, res, next) => {
               { _id: id },
               (toChange = {
                 $inc: { dislikes: -1 },
-                $pull: { usersDisliked: userId },
+                $pull: { usersDisliked: userId }
               }),
               { new: true }
             )
@@ -131,13 +131,13 @@ exports.likeSauce = (req, res, next) => {
         case 1:
           toChange = {
             $inc: { likes: 1 },
-            $push: { usersLiked: userId },
+            $push: { usersLiked: userId }
           };
           if (usersDislikedExists) {
             toChange = {
               $inc: { dislikes: -1, likes: 1 },
               $pull: { usersDisliked: userId },
-              $push: { usersLiked: userId },
+              $push: { usersLiked: userId }
             };
           }
           if (!usersLikedExists) {
@@ -155,31 +155,31 @@ exports.likeSauce = (req, res, next) => {
     .catch((error) => res.status(404).json({ error }));
 };
 
-//modifies one Sauce
+//updates one Sauce
 exports.updateSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     if (!sauce) {
       res.status(404).json({
-        error: new Error("No such Sauce!"),
+        error: new Error("No such Sauce!")
       });
-    }
-    if (sauce.userId !== req.auth.userId) {
+    } else if (sauce.userId !== req.auth.userId) {
       res.status(403).json({
-        error: new Error("Unauthorized request!"),
+        error: new Error("Unauthorized request!")
       });
+    } else {
+      const sauceObject = req.file
+        ? {
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `/images/${req.file.filename}`
+          }
+        : { ...req.body };
+      Sauce.updateOne(
+        { _id: req.params.id },
+        { ...sauceObject, _id: req.params.id }
+      )
+        .then(() => res.status(200).json({ message: "Updated !" }))
+        .catch((error) => res.status(400).json({ error }));
     }
-    const sauceObject = req.file
-      ? {
-          ...JSON.parse(req.body.sauce),
-          imageUrl: `/images/${req.file.filename}`,
-        }
-      : { ...req.body };
-    Sauce.updateOne(
-      { _id: req.params.id },
-      { ...sauceObject, _id: req.params.id }
-    )
-      .then(() => res.status(200).json({ message: "Updated !" }))
-      .catch((error) => res.status(400).json({ error }));
   });
 };
 
@@ -189,27 +189,27 @@ exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     if (!sauce) {
       res.status(404).json({
-        error: new Error("No such Sauce!"),
+        error: new Error("No such Sauce!")
       });
-    }
-    if (sauce.userId !== req.auth.userId) {
+    } else if (sauce.userId !== req.auth.userId) {
       res.status(403).json({
-        error: new Error("Unauthorized request!"),
+        error: new Error("Unauthorized request!")
+      });
+    } else {
+      const filename = sauce.imageUrl.split("/images/")[1];
+      fs.unlink(`images/${filename}`, () => {
+        Sauce.deleteOne({ _id: req.params.id })
+          .then(() => {
+            res.status(200).json({
+              message: "Deleted!"
+            });
+          })
+          .catch((error) => {
+            res.status(400).json({
+              error: error
+            });
+          });
       });
     }
-    const filename = sauce.imageUrl.split("/images/")[1];
-    fs.unlink(`images/${filename}`, () => {
-      Sauce.deleteOne({ _id: req.params.id })
-        .then(() => {
-          res.status(200).json({
-            message: "Deleted!",
-          });
-        })
-        .catch((error) => {
-          res.status(400).json({
-            error: error,
-          });
-        });
-    });
   });
 };
