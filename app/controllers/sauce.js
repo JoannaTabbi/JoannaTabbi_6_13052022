@@ -173,12 +173,15 @@ exports.updateSauce = (req, res, next) => {
             imageUrl: `/images/${req.file.filename}`
           }
         : { ...req.body };
-      Sauce.updateOne(
-        { _id: req.params.id },
-        { ...sauceObject, _id: req.params.id }
-      )
+      const filename = sauce.imageUrl.split("/images/")[1];
+      fs.unlink(`images/${filename}`, () => {
+        Sauce.updateOne(
+          { _id: req.params.id },
+          { ...sauceObject, _id: req.params.id }
+        )
         .then(() => res.status(200).json({ message: "Updated !" }))
         .catch((error) => res.status(400).json({ error }));
+      });  
     }
   });
 };
