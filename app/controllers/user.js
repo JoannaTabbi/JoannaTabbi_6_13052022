@@ -12,10 +12,9 @@ exports.signup = (req, res, next) => {
       });
       user
         .save()
-        .then((user) => res.status(201).json({ 
-          userId: user._id,
-          email: user.email
-         }))
+        .then((user) => res.status(201).json( 
+          user
+         ))
         .catch((error) => res.status(400).json({ error }));
     })
     .catch((error) => res.status(500).json({ error }));
