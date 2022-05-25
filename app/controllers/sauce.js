@@ -1,8 +1,10 @@
 const fs = require("fs");
-const sauce = require("../models/sauce");
 const Sauce = require("../models/sauce");
 
-//displays a single sauce
+/**
+ * returns the sauce for an id given; 
+ * converts its imageURL to suit the request's protocol.
+ */
 exports.readOneSauce = (req, res, next) => {
   const id = req.params.id;
   Sauce.findById(id)
@@ -13,7 +15,10 @@ exports.readOneSauce = (req, res, next) => {
     .catch((error) => res.status(404).json({ error }));
 };
 
-//displays all the sauces
+/**
+ * returns an array of all the sauces from the Sauce collection; 
+ * converts the imageURLs to suit the request protocol;
+ */
 exports.readAllSauces = (req, res, next) => {
   Sauce.find()
     .then((sauces) => {
@@ -28,7 +33,11 @@ exports.readAllSauces = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
-// adds a new sauce
+/**
+ * Creates and adds a new sauce to the Sauce collection. 
+ * The image and the sauce objet are mandatory.
+ * The id of the sauce creator (userId) is added systematically to the sauce.
+ */
 exports.createSauce = (req, res, next) => {
   if (!req.file) {
     return res.status(422).json({ message: "The image is mandatory" });
@@ -49,17 +58,16 @@ exports.createSauce = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
-/* control user's vote (like / dislike / vote reset)
-cette fonction met à jour le vote du client pour une sauce donnée en fonction de 3 paramètres :
-- son vote (aime = 1, n'aime pas = -1, remise à zéro = 0 );
-- avait-il déjà mis un like auparavant ? 
-- avait-il déjà mis un dislike auparavant ? 
-*/
+/**
+ * Method that adds or removes a like or a dislike given by a user to a sauce.
+ * If like = 1, the user likes the sauce : his like is added to the value of likes and 
+ * the user's id is added to the usersLiked array. If like = -1, the user dislikes the sauce : 
+ * his dislike is added to the value of dislikes and his id to the usersDisliked array.
+ * If like = 0, the user resets his vote; his like or dislike is removed from the 
+ * likes / dislikes value and his Id : from the usersLiked or usersDisliked array. 
+ */
 exports.likeSauce = (req, res, next) => {
-  /*frontend req: {
-   "like" : ""
- }
-*/
+  
   const id = req.params.id;
   Sauce.findById(id)
     .then((sauceFound) => {
@@ -155,7 +163,15 @@ exports.likeSauce = (req, res, next) => {
     .catch((error) => res.status(404).json({ error }));
 };
 
-//updates one Sauce
+/**
+ * Updates the sauce for an ID given. 
+ * If the image file is present, it is captured and its URL is updated, while
+ * the ancient image is definitely removed from the image folder.
+ * If no file is given, the sauce elements are present directly in the request body.
+ * If a file is given, the sauce elements  are transmitted by req.body.sauce.
+ * If UserId of the request does not match the one of the sauce creator, 
+ * the request is not authorized.
+ */
 exports.updateSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     if (!sauce) {
@@ -186,7 +202,12 @@ exports.updateSauce = (req, res, next) => {
   });
 };
 
-//deletes one sauce
+/**
+ * deletes the sauce for an id given.
+ * The image file is removed definitely from the image folder. 
+ * Is userId from the request does not match the one of the sauce creator, the request
+ * is not authorized.
+ */
 
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
