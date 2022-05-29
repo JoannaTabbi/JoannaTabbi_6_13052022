@@ -205,7 +205,7 @@ exports.updateSauce = (req, res, next) => {
 /**
  * deletes the sauce for an id given.
  * The image file is removed definitely from the image folder. 
- * Is userId from the request does not match the one of the sauce creator, the request
+ * If userId from the request does not match the one of the sauce creator, the request
  * is not authorized.
  */
 
@@ -237,3 +237,10 @@ exports.deleteSauce = (req, res, next) => {
     }
   });
 };
+
+/**
+ * report sauce
+ */
+ exports.reportSauce = (req, res, next) => {
+  
+}
