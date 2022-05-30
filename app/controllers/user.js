@@ -16,12 +16,16 @@ exports.signup = (req, res, next) => {
       });
       user
         .save()
-        .then((user) => res.status(201).json( 
+        .then((user) => res.status(201).json(
           user
-         ))
-        .catch((error) => res.status(400).json({ error }));
+        ))
+        .catch((error) => res.status(400).json({
+          error
+        }));
     })
-    .catch((error) => res.status(500).json({ error }));
+    .catch((error) => res.status(500).json({
+      error
+    }));
 };
 
 /**
@@ -31,60 +35,69 @@ exports.signup = (req, res, next) => {
  * If correct, returns userId and a token.
  */
 exports.login = (req, res, next) => {
-  User.findOne({ email: req.body.email })
+  User.findOne({
+      email: req.body.email
+    })
     .then((user) => {
       if (!user) {
-        return res.status(401).json({ error: "User not found" });
+        return res.status(401).json({
+          error: "User not found"
+        });
       }
       bcrypt
         .compare(req.body.password, user.password)
         .then((valid) => {
           if (!valid) {
-            return res.status(401).json({ error: "Incorrect password" });
+            return res.status(401).json({
+              error: "Incorrect password"
+            });
           }
           res.status(200).json({
             userId: user._id,
-            token: jwt.sign(
-                { userId: user._id },
-                process.env.TOKEN_SECRET,
-                { expiresIn: '24h'}
+            token: jwt.sign({
+                userId: user._id
+              },
+              process.env.TOKEN_SECRET, {
+                expiresIn: '24h'
+              }
             ),
           });
         })
-        .catch((error) => res.status(500).json({ error }));
+        .catch((error) => res.status(500).json({
+          error
+        }));
     })
-    .catch((error) => res.status(500).json({ error }));
+    .catch((error) => res.status(500).json({
+      error
+    }));
 };
 
 /**
  * displays user's data.
  * If the user's id does not match the one assigned to the user in Users Colection, 
  * the request is not authorized.
-*/
+ */
 exports.readUser = (req, res, next) => {
-  const id = req.params.id;
-  User.findById(id)
+  User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
         res.status(404).json({
           error: new Error("User not found!")
         });
-      } else if (id !== req.auth.userId) {
-        res.status(403).json({
-          error: new Error("Unauthorized request!")
-        });
       } else {
         res.status(200).json(user);
-      } 
+      }
     })
-    .catch((error) => res.status(404).json({ error }));
+    .catch((error) => res.status(404).json({
+      error
+    }));
 }
 
 /**
  * exports Data
  */
 exports.exportData = (req, res, next) => {
-  
+
 }
 
 /**
@@ -93,30 +106,33 @@ exports.exportData = (req, res, next) => {
  * is not authorized.
  */
 exports.updateUser = (req, res, next) => {
-  const id = req.params.id;
-  User.findById(id)
+  User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
         res.status(404).json({
           error: new Error("User not found!")
         });
-      } else if (id !== req.auth.userId) {
-        res.status(403).json({
-          error: new Error("Unauthorized request!")
-        });
       } else {
-        User.updateOne(
-          { _id: req.params.id }
-        )
-          .then(() => res.status(200).json({ message: "User updated !" }))
+        User.findByIdAndUpdate({
+            _id: req.auth.userId
+          }, {
+            ...req.body
+          }, {
+            new: true
+          })
+          .then((userUpdated) => res.status(200).json(
+            userUpdated
+          ))
           .catch((error) => {
             res.status(400).json({
               error: error
             });
           });
-      } 
+      }
     })
-    .catch((error) => res.status(404).json({ error }));
+    .catch((error) => res.status(404).json({
+      error
+    }));
 }
 
 /**
@@ -125,37 +141,64 @@ exports.updateUser = (req, res, next) => {
  * is not authorized.
  */
 exports.deleteUser = (req, res, next) => {
-  const id = req.params.id;
-  User.findById(id)
+  User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
         res.status(404).json({
           error: new Error("User not found!")
         });
-      } else if (id !== req.auth.userId) {
-        res.status(403).json({
-          error: new Error("Unauthorized request!")
-        });
       } else {
-       User.deleteOne({ _id: req.params.id })
-        .then(() => {
-          res.status(204).json({
-            message: "User deleted!"
+        User.deleteOne({
+            _id: req.auth.userId
+          })
+          .then(() => {
+            res.status(204).json()
+          })
+          .catch((error) => {
+            res.status(400).json({
+              error: error
+            });
           });
-        })
-        .catch((error) => {
-          res.status(400).json({
-            error: error
-          });
-        });
-      } 
+      }
     })
-    .catch((error) => res.status(404).json({ error }));
- }
+    .catch((error) => res.status(404).json({
+      error
+    }));
+}
 
 /**
- * report User
+ * Reports a user for an id given. 
+ * The id of the user who reports is added to the usersWhoReported array 
+ * and the value of reports is increased by 1. No change if the id of the user who reports
+ * is already present in the usersWhoReported array.
  */
 exports.reportUser = (req, res, next) => {
-  
+  User.findById(req.params.id)
+    .then((user) => {
+      if (!user.usersWhoReported.includes(req.auth.userId)) {
+        User.findByIdAndUpdate({
+            _id: req.params.id
+          }, {
+            $inc: {
+              reports: 1
+            },
+            $push: {
+              usersWhoReported: req.auth.userId
+            }
+          }, {
+            new: true
+          })
+          .then((userUpdated) => res.status(200).json(userUpdated))
+          .catch((error) => res.status(400).json({
+            error
+          }))
+      } else {
+        res
+          .status(200)
+          .json({
+            message: "User already reported"
+          });
+      }
+    })
+    .catch()
 }

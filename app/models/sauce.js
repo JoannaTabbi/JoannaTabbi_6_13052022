@@ -12,7 +12,9 @@ const sauceSchema = new Schema({
   likes: { type: Number, default: 0 },
   dislikes: { type: Number, default: 0 },
   usersLiked: [{type: String, ref: 'User'}],
-  usersDisliked: [{type: String, ref: 'User'}]
+  usersDisliked: [{type: String, ref: 'User'}],
+  reports: { type: Number, default: 0 },
+  usersWhoReported: [{type: String, ref: 'User'}]
 });
 
 module.exports = mongoose.model('Sauce', sauceSchema);

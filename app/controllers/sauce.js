@@ -6,8 +6,7 @@ const Sauce = require("../models/sauce");
  * converts its imageURL to suit the request's protocol.
  */
 exports.readOneSauce = (req, res, next) => {
-  const id = req.params.id;
-  Sauce.findById(id)
+  Sauce.findById(req.params.id)
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`;
       res.status(200).json(sauce);
@@ -67,9 +66,7 @@ exports.createSauce = (req, res, next) => {
  * likes / dislikes value and his Id : from the usersLiked or usersDisliked array. 
  */
 exports.likeSauce = (req, res, next) => {
-  
-  const id = req.params.id;
-  Sauce.findById(id)
+  Sauce.findById(req.params.id)
     .then((sauceFound) => {
       const userId = req.auth.userId;
       const usersLikedExists = sauceFound.usersLiked.includes(userId);
@@ -89,8 +86,8 @@ exports.likeSauce = (req, res, next) => {
             };
           }
           if (!usersDislikedExists) {
-            Sauce.findByIdAndUpdate({ _id: id }, toChange, { new: true })
-              .then((newSauce) => res.status(201).json(newSauce))
+            Sauce.findByIdAndUpdate({ _id: req.params.id }, toChange, { new: true })
+              .then((sauceUpdated) => res.status(200).json(sauceUpdated))
               .catch((error) => res.status(400).json({ error }));
           } else {
             res
@@ -101,36 +98,36 @@ exports.likeSauce = (req, res, next) => {
         case 0:
           if (usersLikedExists && usersDislikedExists) {
             Sauce.findByIdAndUpdate(
-              { _id: id },
+              { _id: req.params.id },
               (toChange = {
                 $inc: { dislikes: -1, likes: -1 },
                 $pull: { usersLiked: userId, usersDisliked: userId }
               }),
               { new: true }
             )
-              .then((newSauce) => res.status(201).json(newSauce))
+              .then((sauceUpdated) => res.status(200).json(sauceUpdated))
               .catch((error) => res.status(400).json({ error }));
           } else if (usersLikedExists) {
             Sauce.findByIdAndUpdate(
-              { _id: id },
+              { _id: req.params.id },
               (toChange = {
                 $inc: { likes: -1 },
                 $pull: { usersLiked: userId }
               }),
               { new: true }
             )
-              .then((newSauce) => res.status(201).json(newSauce))
+              .then((sauceUpdated) => res.status(200).json(sauceUpdated))
               .catch((error) => res.status(400).json({ error }));
           } else if (usersDislikedExists) {
             Sauce.findByIdAndUpdate(
-              { _id: id },
+              { _id: req.params.id },
               (toChange = {
                 $inc: { dislikes: -1 },
                 $pull: { usersDisliked: userId }
               }),
               { new: true }
             )
-              .then((newSauce) => res.status(201).json(newSauce))
+              .then((sauceUpdated) => res.status(200).json(sauceUpdated))
               .catch((error) => res.status(400).json({ error }));
           } else {
             res.status(200).json({ message: "User's vote is already reset" });
@@ -149,8 +146,8 @@ exports.likeSauce = (req, res, next) => {
             };
           }
           if (!usersLikedExists) {
-            Sauce.findByIdAndUpdate({ _id: id }, toChange, { new: true })
-              .then((newSauce) => res.status(201).json(newSauce))
+            Sauce.findByIdAndUpdate({ _id: req.params.id }, toChange, { new: true })
+              .then((sauceUpdated) => res.status(201).json(sauceUpdated))
               .catch((error) => res.status(400).json({ error }));
           } else {
             res
@@ -173,7 +170,7 @@ exports.likeSauce = (req, res, next) => {
  * the request is not authorized.
  */
 exports.updateSauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+  Sauce.findById(req.params.id).then((sauce) => {
     if (!sauce) {
       res.status(404).json({
         error: new Error("No such Sauce!")
@@ -191,11 +188,12 @@ exports.updateSauce = (req, res, next) => {
         : { ...req.body };
       const filename = sauce.imageUrl.split("/images/")[1];
       fs.unlink(`images/${filename}`, () => {
-        Sauce.updateOne(
+        Sauce.findByIdAndUpdate(
           { _id: req.params.id },
-          { ...sauceObject, _id: req.params.id }
+          { ...sauceObject, _id: req.params.id },
+          { new: true }
         )
-        .then(() => res.status(200).json({ message: "Updated !" }))
+        .then((sauceUpdated) => res.status(200).json(sauceUpdated))
         .catch((error) => res.status(400).json({ error }));
       });  
     }
@@ -224,9 +222,7 @@ exports.deleteSauce = (req, res, next) => {
       fs.unlink(`images/${filename}`, () => {
         Sauce.deleteOne({ _id: req.params.id })
           .then(() => {
-            res.status(200).json({
-              message: "Deleted!"
-            });
+            res.status(204).json()
           })
           .catch((error) => {
             res.status(400).json({
@@ -239,8 +235,38 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 /**
- * report sauce
+ * Reports a sauce for an id given. 
+ * The id of the user who reports is added to the usersWhoReported array 
+ * and the value of reports is increased by 1. No change if the id of the user who reports
+ * is already present in the usersWhoReported array.
  */
  exports.reportSauce = (req, res, next) => {
-  
+  Sauce.findById(req.params.id)
+    .then((sauce) => {
+      if (!sauce.usersWhoReported.includes(req.auth.userId)) {
+        Sauce.findByIdAndUpdate({
+            _id: req.params.id
+          }, {
+            $inc: {
+              reports: 1
+            },
+            $push: {
+              usersWhoReported: req.auth.userId
+            }
+          }, {
+            new: true
+          })
+          .then((sauceUpdated) => res.status(200).json(sauceUpdated))
+          .catch((error) => res.status(400).json({
+            error
+          }))
+      } else {
+        res
+          .status(200)
+          .json({
+            message: "Sauce already reported"
+          });
+      }
+    })
+    .catch()
 }
