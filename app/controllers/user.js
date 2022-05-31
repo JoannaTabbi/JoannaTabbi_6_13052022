@@ -54,9 +54,9 @@ exports.login = (req, res, next) => {
           }
           res.status(200).json({
             userId: user._id,
-            token: jwt.sign({      // creating a token for the new session; 
-                userId: user._id          // the method takes two arguments : 
-              },                          // a response object and
+            token: jwt.sign({ // creating a token for the new session; 
+                userId: user._id // the method takes two arguments : 
+              }, // a response object and
               process.env.TOKEN_SECRET, { // a secret key
                 expiresIn: '24h'
               }
@@ -108,7 +108,7 @@ exports.exportData = (req, res, next) => {
         const text = user.toString(); // returns the user object to string format
         res.attachment("user-data.txt");
         res.type("txt");
-      return res.status(200).send(text);
+        return res.status(200).send(text);
       }
     })
     .catch((error) => res.status(404).json({

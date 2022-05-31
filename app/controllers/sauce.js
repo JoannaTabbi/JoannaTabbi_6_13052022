@@ -258,14 +258,12 @@ exports.updateSauce = (req, res, next) => {
         error: new Error("Unauthorized request!")
       });
     } else {
-      const sauceObject = req.file ?
-        {
-          ...JSON.parse(req.body.sauce),
-          imageUrl: `/images/${req.file.filename}`
-        } :
-        {
-          ...req.body
-        };
+      const sauceObject = req.file ? {
+        ...JSON.parse(req.body.sauce),
+        imageUrl: `/images/${req.file.filename}`
+      } : {
+        ...req.body
+      };
       const filename = sauce.imageUrl.split("/images/")[1];
       try {
         if (sauceObject.imageUrl) {

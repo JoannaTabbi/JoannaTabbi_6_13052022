@@ -19,5 +19,3 @@ router.post('/report/:id', auth, sauceCtrl.reportSauce);
 
 
 module.exports = router;
-
-

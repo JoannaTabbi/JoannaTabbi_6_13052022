@@ -10,9 +10,11 @@ module.exports = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     //decodedToken verifies the token string value and the secret key
     // then returns a decoded object that we stored the token in
-    const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET); 
-    const userId = decodedToken.userId; 
-    req.auth = { userId };
+    const decodedToken = jwt.verify(token, process.env.TOKEN_SECRET);
+    const userId = decodedToken.userId;
+    req.auth = {
+      userId
+    };
     if (req.body.userId && req.body.userId !== userId) {
       throw 'Invalid user ID';
     } else {
