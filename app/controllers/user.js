@@ -54,10 +54,10 @@ exports.login = (req, res, next) => {
           }
           res.status(200).json({
             userId: user._id,
-            token: jwt.sign({
-                userId: user._id
-              },
-              process.env.TOKEN_SECRET, {
+            token: jwt.sign({      // creating a token for the new session; 
+                userId: user._id          // the method takes two arguments : 
+              },                          // a response object and
+              process.env.TOKEN_SECRET, { // a secret key
                 expiresIn: '24h'
               }
             ),
@@ -94,10 +94,26 @@ exports.readUser = (req, res, next) => {
 }
 
 /**
- * exports Data
+ * Exports the user's data. Returns the data as a text file attached 
+ * to the response. 
  */
 exports.exportData = (req, res, next) => {
-
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!")
+        });
+      } else {
+        const text = user.toString(); // returns the user object to string format
+        res.attachment("user-data.txt");
+        res.type("txt");
+      return res.status(200).send(text);
+      }
+    })
+    .catch((error) => res.status(404).json({
+      error
+    }));
 }
 
 /**

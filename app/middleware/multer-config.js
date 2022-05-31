@@ -1,12 +1,15 @@
 const multer = require("multer");
-
+/**
+ * defines the media types supported for the uploaded images files
+ */
 const MIME_TYPES = {
   "image/jpg": "jpg",
   "image/jpeg": "jpg",
   "image/png": "png",
 };
 
-const storage = multer.diskStorage({
+//setting up the path (destination) and the filename for the uploaded files
+const storage = multer.diskStorage({ 
   destination: (req, file, callback) => {
     callback(null, "images");
   },

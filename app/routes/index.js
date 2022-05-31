@@ -4,7 +4,7 @@ const userRoutes = require('./user');
 const sauceRoutes = require('./sauce');
 const path = require('path');
 
-// route for users / sauces
+// common paths for users routes / sauces routes / image files
 router.use('/auth', userRoutes);
 router.use('/sauces', sauceRoutes);
 router.use('/images', express.static(path.join(__dirname, 'images')));

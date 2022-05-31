@@ -5,7 +5,9 @@ if (!process.env.MONGO_URI) {
     console.log("No DB_URL found in .env configuration");
   }
   
-  
+  /**
+   * establishes the connexion to the database MongoDB through mongoose module
+   */
   mongoose
     .connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
