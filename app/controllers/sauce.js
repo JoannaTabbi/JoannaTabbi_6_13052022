@@ -219,7 +219,7 @@ exports.likeSauce = (req, res, next) => {
               }, toChange, {
                 new: true
               })
-              .then((sauceUpdated) => res.status(201).json(sauceUpdated))
+              .then((sauceUpdated) => res.status(200).json(sauceUpdated))
               .catch((error) => res.status(400).json({
                 error
               }));
