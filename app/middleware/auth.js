@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 /**
  * controls the authorization before passing to the next middleware.
  * extracts the user's token from request headers, then 
- * checks if it matches the one given to the 
+ * checks if it matches the one given while login
  */
 module.exports = (req, res, next) => {
   try {
