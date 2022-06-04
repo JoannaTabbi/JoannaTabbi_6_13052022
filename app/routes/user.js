@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userCtrl = require('../controllers/user');
 const auth = require('../middleware/auth');
+const password = require('../middleware/password');
 
 /**
  * searche for the specified sauce routes 
@@ -9,7 +10,7 @@ const auth = require('../middleware/auth');
  * that match the request (read one, read all, create etc...)
  */
 
-router.post('/signup', userCtrl.signup);
+router.post('/signup', password, userCtrl.signup);
 router.post('/login', userCtrl.login);
 router.get('/:id', auth, userCtrl.readUser);
 router.get('/export/:id', auth, userCtrl.exportData);
