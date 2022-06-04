@@ -27,7 +27,7 @@ exports.readAllSauces = (req, res, next) => {
         sauce.imageUrl = `${req.protocol}://${req.get("host")}${
           sauce.imageUrl
         }`;
-        return sauce;
+        return {...sauce._doc};
       });
       res.status(200).json(sauces);
     })

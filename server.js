@@ -3,6 +3,7 @@ const cors = require("cors");
 require('dotenv').config();
 const app = express();
 const router = require('./app/routes/index');
+const path = require('path');
 
 // setting headers for CORS errors
 app.use((req, res, next) => {
@@ -31,6 +32,8 @@ app.use(express.urlencoded({
   extended: true
 }));
 app.use('/api', router);
+// set path to images
+app.use("/images", express.static(path.join(__dirname, "images")));
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
