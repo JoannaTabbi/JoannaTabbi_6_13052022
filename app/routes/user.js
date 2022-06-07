@@ -13,10 +13,10 @@ const rateLimiter = require('../middleware/rate-limiter');
 
 router.post('/signup', password, userCtrl.signup);
 router.post('/login', rateLimiter, userCtrl.login);
-router.get('/:id', auth, userCtrl.readUser);
-router.get('/export/:id', auth, userCtrl.exportData);
-router.put('/:id', auth, userCtrl.updateUser);
-router.delete('/:id', auth, userCtrl.deleteUser);
+router.get('/', auth, userCtrl.readUser);
+router.get('/export', auth, userCtrl.exportData);
+router.put('/', auth, userCtrl.updateUser);
+router.delete('/', auth, userCtrl.deleteUser);
 router.post('/report/:id', auth, userCtrl.reportUser);
 
 module.exports = router;
