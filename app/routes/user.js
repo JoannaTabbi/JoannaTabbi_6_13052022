@@ -3,7 +3,7 @@ const router = express.Router();
 const userCtrl = require('../controllers/user');
 const auth = require('../middleware/auth');
 const password = require('../middleware/password');
-const limiter = require('../middleware/rate-limiter');
+const rateLimiter = require('../middleware/rate-limiter');
 
 /**
  * searche for the specified sauce routes 
@@ -12,7 +12,7 @@ const limiter = require('../middleware/rate-limiter');
  */
 
 router.post('/signup', password, userCtrl.signup);
-router.post('/login', limiter, userCtrl.login);
+router.post('/login', rateLimiter, userCtrl.login);
 router.get('/:id', auth, userCtrl.readUser);
 router.get('/export/:id', auth, userCtrl.exportData);
 router.put('/:id', auth, userCtrl.updateUser);

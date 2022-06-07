@@ -5,7 +5,8 @@ const app = express();
 const router = require('./app/routes/index');
 const path = require('path');
 const mongoSanitize = require('express-mongo-sanitize');
-const speedLimiter = require('./app/middleware/speed-limiter')
+const speedLimiter = require('./app/middleware/speed-limiter');
+const helmet = require('helmet');
 
 // setting headers for CORS errors
 app.use((req, res, next) => {
@@ -49,6 +50,12 @@ app.use(mongoSanitize());
 
 //apply speed limiter to all requests
 app.use(speedLimiter);
+
+/**
+ * set various HTTP headers to secure the app ; see https://helmetjs.github.io/ 
+ * for more details
+ */ 
+ app.use(helmet());
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

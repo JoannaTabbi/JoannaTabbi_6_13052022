@@ -1,3 +1,7 @@
+/**
+ * define a schema of valid password. This forces the user to create a strong password
+ * with high security level and therefore minimises the risk of broken authentication.
+ */
 const passwordValidator = require('password-validator');
 
 // Create a password schema
@@ -17,8 +21,9 @@ module.exports = (req, res, next) => {
     if (passwordSchema.validate(req.body.password)) {
         next();
     } else {
+        const pwdValidError = passwordSchema.validate(req.body.password, {details: true});
         return res.status(400).json({
-            error: `password strength low: ${passwordSchema.validate(req.body.password, {list: true})} `
+            error: pwdValidError
         })
     }
 }
