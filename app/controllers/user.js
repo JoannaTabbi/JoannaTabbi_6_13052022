@@ -1,17 +1,48 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
+const cryptoJS = require('crypto-js');
+require('dotenv').config();
+
+/**
+ * encrypts the user's email 
+ */
+
+function encryptMail(content) {
+  const parsedkey = cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY);
+  const iv = cryptoJS.enc.Utf8.parse(process.env.IV);
+  const enc = cryptoJS.AES.encrypt(content, parsedkey, {
+    iv: iv,
+    mode: cryptoJS.mode.ECB,
+    padding: cryptoJS.pad.Pkcs7
+  });
+  return enc.toString();
+}
+/**
+ * decrypts user's email 
+ */
+function decryptMail(encryptedContent) {
+  const key = cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY);
+  const base64 = cryptoJS.enc.Base64.parse(encryptedContent);
+  const src = cryptoJS.enc.Base64.stringify(base64);
+  const dec = cryptoJS.AES.decrypt(src, key, {
+    mode: cryptoJS.mode.ECB,
+    padding: cryptoJS.pad.Pkcs7
+  });
+  return dec.toString(cryptoJS.enc.Utf8);
+}
 
 /**
  * Register a new user. 
- * the password is securised with hash (bcrypt module)
+ * the password is securised with hash (bcrypt module) and
+ * the email is encrypted
  */
 exports.signup = (req, res, next) => {
   bcrypt
     .hash(req.body.password, 10)
     .then((hash) => {
       const user = new User({
-        email: req.body.email,
+        email: encryptMail(req.body.email),
         password: hash
       });
       user
@@ -30,13 +61,14 @@ exports.signup = (req, res, next) => {
 
 /**
  * logs the user who's already registered. 
- * This method controls if the email given in the request is present in the Users collection, 
- * then checks if the password given matches the one assigned to the user in bd.
- * If correct, returns userId and a token.
+ * This method encrypts the email given in the request and controls if it is present 
+ * in the Users collection, then checks if the password given matches the one assigned 
+ * to the user in bd. If correct, returns userId and a token.
  */
 exports.login = (req, res, next) => {
+  const emailEncrypted = encryptMail(req.body.email);
   User.findOne({
-      email: req.body.email
+      email: emailEncrypted
     })
     .then((user) => {
       if (!user) {
@@ -52,6 +84,7 @@ exports.login = (req, res, next) => {
               error: "Incorrect password"
             });
           }
+          user.email = decryptMail(user.email);
           res.status(200).json({
             userId: user._id,
             token: jwt.sign({ // creating a token for the new session; 
@@ -61,6 +94,7 @@ exports.login = (req, res, next) => {
                 expiresIn: '24h'
               }
             ),
+            User: user
           });
         })
         .catch((error) => res.status(500).json({
@@ -73,7 +107,7 @@ exports.login = (req, res, next) => {
 };
 
 /**
- * displays user's data.
+ * displays user's data. The email is decrypted before displaying. 
  * If the user's id does not match the one assigned to the user in Users Colection, 
  * the request is not authorized.
  */
@@ -85,6 +119,7 @@ exports.readUser = (req, res, next) => {
           error: new Error("User not found!")
         });
       } else {
+        user.email = decryptMail(user.email); // decrypts user's email
         res.status(200).json(user);
       }
     })
@@ -94,8 +129,8 @@ exports.readUser = (req, res, next) => {
 }
 
 /**
- * Exports the user's data. Returns the data as a text file attached 
- * to the response. 
+ * Exports the user's data. The email is decrypted before displaying. 
+ * Returns the data as a text file attached to the response. 
  */
 exports.exportData = (req, res, next) => {
   User.findById(req.auth.userId)
@@ -105,6 +140,7 @@ exports.exportData = (req, res, next) => {
           error: new Error("User not found!")
         });
       } else {
+        user.email = decryptMail(user.email) // decrypts user's email
         const text = user.toString(); // returns the user object to string format
         res.attachment("user-data.txt");
         res.type("txt");
@@ -132,7 +168,8 @@ exports.updateUser = (req, res, next) => {
         User.findByIdAndUpdate({
             _id: req.auth.userId
           }, {
-            ...req.body
+            ...req.body,
+            email: encryptMail(req.body.email)
           }, {
             new: true
           })
