@@ -17,6 +17,6 @@ router.get('/', auth, userCtrl.readUser);
 router.get('/export', auth, userCtrl.exportData);
 router.put('/', auth, userCtrl.updateUser);
 router.delete('/', auth, userCtrl.deleteUser);
-router.post('/report/:id', auth, userCtrl.reportUser);
+router.post('/:id/report', auth, userCtrl.reportUser);
 
 module.exports = router;

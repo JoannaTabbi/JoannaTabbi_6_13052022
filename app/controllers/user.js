@@ -35,7 +35,7 @@ function decryptMail(encryptedContent) {
 /**
  * create hateoas links 
  */
-const hateoasLinks = (req, id) => {
+const hateoasLinks = (req) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/auth"}`;
   return [
     {
