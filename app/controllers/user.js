@@ -129,7 +129,7 @@ exports.readUser = (req, res, next) => {
 }
 
 /**
- * Exports the user's data. The email is decryptes before displaying. 
+ * Exports the user's data. The email is decrypted before displaying. 
  * Returns the data as a text file attached to the response. 
  */
 exports.exportData = (req, res, next) => {
@@ -168,7 +168,8 @@ exports.updateUser = (req, res, next) => {
         User.findByIdAndUpdate({
             _id: req.auth.userId
           }, {
-            ...req.body
+            ...req.body,
+            email: encryptMail(req.body.email)
           }, {
             new: true
           })

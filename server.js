@@ -36,13 +36,15 @@ app.use('/api', router);
 // set path to images
 app.use("/images", express.static(path.join(__dirname, "images")));
 /**
- * Controls user's input and removes $ and . characters in the following places:
+ * searche for the keys beginning with $ or containing . characters and removes 
+ * these caracters from user-supplied input in the following places:
  - req.body
  - req.params
  - req.headers
  - req.query
  */
 app.use(mongoSanitize());
+
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
