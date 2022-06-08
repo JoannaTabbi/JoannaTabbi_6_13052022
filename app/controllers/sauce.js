@@ -60,10 +60,9 @@ exports.readOneSauce = (req, res, next) => {
   Sauce.findById(req.params.id)
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`;
-      res.status(200).json({
-        sauce,
-        hateoasLinks: hateoasLinks(req, sauce._id) 
-      });
+      res.status(200).json(
+        sauce
+      );
     })
     .catch((error) => res.status(404).json({
       error
@@ -112,13 +111,13 @@ exports.createSauce = (req, res, next) => {
     ...sauceObject,
     userId: req.auth.userId,
     imageUrl: `/images/${req.file.filename}`
+    //hateoas: hateoasLinks(req, sauce._id)
   });
   sauce
     .save()
-    .then((newSauce) => res.status(201).json({
-      newSauce,
-      hateoasLinks: hateoasLinks(req, sauce._id)
-    }))
+    .then((newSauce) => res.status(201).json(
+      newSauce
+    ))
     .catch((error) => res.status(400).json({
       error
     }));
@@ -169,10 +168,9 @@ exports.likeSauce = (req, res, next) => {
               }, toChange, {
                 new: true
               })
-              .then((sauceUpdated) => res.status(200).json({
-                sauceUpdated,
-                hateoasLinks: hateoasLinks(req, sauceUpdated._id)
-              }))
+              .then((sauceUpdated) => res.status(200).json(
+                sauceUpdated
+              ))
               .catch((error) => res.status(400).json({
                 error
               }));
@@ -202,10 +200,9 @@ exports.likeSauce = (req, res, next) => {
                   new: true
                 }
               )
-              .then((sauceUpdated) => res.status(200).json({
-                sauceUpdated,
-                hateoasLinks: hateoasLinks(req, sauceUpdated._id)
-              }))
+              .then((sauceUpdated) => res.status(200).json(
+                sauceUpdated
+                ))
               .catch((error) => res.status(400).json({
                 error
               }));
@@ -224,10 +221,9 @@ exports.likeSauce = (req, res, next) => {
                   new: true
                 }
               )
-              .then((sauceUpdated) => res.status(200).json({
-                sauceUpdated,
-                hateoasLinks: hateoasLinks(req, sauceUpdated._id)
-              }))
+              .then((sauceUpdated) => res.status(200).json(
+                sauceUpdated
+                ))
               .catch((error) => res.status(400).json({
                 error
               }));
@@ -246,10 +242,9 @@ exports.likeSauce = (req, res, next) => {
                   new: true
                 }
               )
-              .then((sauceUpdated) => res.status(200).json({
-                sauceUpdated,
-                hateoasLinks: hateoasLinks(req, sauceUpdated._id)
-              }))
+              .then((sauceUpdated) => res.status(200).json(
+                sauceUpdated
+                ))
               .catch((error) => res.status(400).json({
                 error
               }));
@@ -288,10 +283,9 @@ exports.likeSauce = (req, res, next) => {
               }, toChange, {
                 new: true
               })
-              .then((sauceUpdated) => res.status(200).json({
-                sauceUpdated,
-                hateoasLinks: hateoasLinks(req, sauceUpdated._id)
-              }))
+              .then((sauceUpdated) => res.status(200).json(
+                sauceUpdated
+                ))
               .catch((error) => res.status(400).json({
                 error
               }));
@@ -352,10 +346,9 @@ exports.updateSauce = (req, res, next) => {
         }, {
           new: true
         })
-        .then((sauceUpdated) => res.status(200).json({
-          sauceUpdated,
-          hateoasLinks: hateoasLinks(req, sauceUpdated._id)
-        }))
+        .then((sauceUpdated) => res.status(200).json(
+          sauceUpdated
+        ))
         .catch((error) => res.status(400).json({
           error
         }));

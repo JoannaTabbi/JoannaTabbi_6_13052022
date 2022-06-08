@@ -55,7 +55,7 @@ app.use(speedLimiter);
  * set various HTTP headers to secure the app ; see https://helmetjs.github.io/ 
  * for more details
  */ 
- app.use(helmet());
+app.use(helmet());
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
