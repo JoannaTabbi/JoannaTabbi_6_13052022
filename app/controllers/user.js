@@ -9,27 +9,27 @@ require('dotenv').config();
  */
 
 function encryptMail(content) {
-  const parsedkey = cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY);
-  const iv = cryptoJS.enc.Utf8.parse(process.env.IV);
-  const enc = cryptoJS.AES.encrypt(content, parsedkey, {
+  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
+  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
+  const encrypted = cryptoJS.AES.encrypt(content, key, {
     iv: iv,
     mode: cryptoJS.mode.ECB,
     padding: cryptoJS.pad.Pkcs7
   });
-  return enc.toString();
+  return encrypted.toString();
 }
 /**
  * decrypts user's email 
  */
 function decryptMail(encryptedContent) {
-  const key = cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY);
-  const base64 = cryptoJS.enc.Base64.parse(encryptedContent);
-  const src = cryptoJS.enc.Base64.stringify(base64);
-  const dec = cryptoJS.AES.decrypt(src, key, {
+  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
+  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
+  const decrypted = cryptoJS.AES.decrypt(encryptedContent, key, {
+    iv: iv,
     mode: cryptoJS.mode.ECB,
     padding: cryptoJS.pad.Pkcs7
   });
-  return dec.toString(cryptoJS.enc.Utf8);
+  return decrypted.toString(cryptoJS.enc.Utf8);
 }
 
 /**
