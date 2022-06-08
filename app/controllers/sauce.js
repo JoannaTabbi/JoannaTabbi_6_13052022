@@ -40,7 +40,7 @@ const Sauce = require("../models/sauce");
     {
       rel: "delete",
       title: "Delete",
-      href: URI + "/",
+      href: URI + id,
       method: "DELETE"
     },
     {
