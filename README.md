@@ -27,6 +27,6 @@ You can test this API with an API client, like POSTMAN or Thunder client which i
 # FRONTEND
 
 If you wish, the frontend part of the project can be retrieved from this [repository](https://github.com/OpenClassrooms-Student-Center/Web-Developer-P6). Add it to your workspace, open new terminal, then from Web-Developer-P6 directory execute :
-*npm install*
-*npm start* 
-The project will run on (http://localhost:4200).
+- *npm install*
+- *npm start* 
+The project will run on http://localhost:4200.

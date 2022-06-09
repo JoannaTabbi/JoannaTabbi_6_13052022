@@ -7,6 +7,7 @@ const path = require('path');
 const mongoSanitize = require('express-mongo-sanitize');
 const speedLimiter = require('./app/middleware/speed-limiter');
 const helmet = require('helmet');
+const hateoasLinker = require('express-hateoas-links');
 
 // setting headers for CORS errors
 app.use((req, res, next) => {
@@ -30,6 +31,8 @@ var corsOptions = {
 app.use(cors(corsOptions));
 // parse requests of content-type - application/json
 app.use(express.json());
+// replace standard express res.json with the new version (second param possible)
+app.use(hateoasLinker);
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({
   extended: true

@@ -2,57 +2,6 @@ const fs = require("fs");
 const Sauce = require("../models/sauce");
 
 /**
- * create hateoas links for sauces
- */
- const hateoasLinks = (req, id) => {
-  const URI = `${req.protocol}://${req.get("host") + "/api/sauces/"}`;
-  return [
-    {
-      rel: "readOne",
-      title: "ReadOne",
-      href: URI + id,
-      method: "GET"
-    },
-    {
-      rel: "readAll",
-      title: "ReadAll",
-      href: URI,
-      method: "GET"
-    },
-    {
-      rel: "create",
-      title: "Create",
-      href: URI,
-      method: "POST"
-    },
-    {
-      rel: "like",
-      title: "Like",
-      href: URI + id + "/like",
-      method: "POST"
-    },
-    {
-      rel: "update",
-      title: "Update",
-      href: URI + id,
-      method: "PUT"
-    },
-    {
-      rel: "delete",
-      title: "Delete",
-      href: URI + id,
-      method: "DELETE"
-    },
-    {
-      rel: "report",
-      title: "Report",
-      href: URI + id + "/report",
-      method: "POST"
-    }
-  ]
-}
-
-/**
  * returns the sauce for an id given; 
  * converts its imageURL to suit the request's protocol.
  */
@@ -61,7 +10,8 @@ exports.readOneSauce = (req, res, next) => {
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`;
       res.status(200).json(
-        sauce
+        sauce,
+        hateoasLinks(req, sauce._id)
       );
     })
     .catch((error) => res.status(404).json({
@@ -116,7 +66,8 @@ exports.createSauce = (req, res, next) => {
   sauce
     .save()
     .then((newSauce) => res.status(201).json(
-      newSauce
+      newSauce,
+      hateoasLinks(req, newSauce._id)
     ))
     .catch((error) => res.status(400).json({
       error
@@ -169,7 +120,8 @@ exports.likeSauce = (req, res, next) => {
                 new: true
               })
               .then((sauceUpdated) => res.status(200).json(
-                sauceUpdated
+                sauceUpdated,
+                hateoasLinks(req, sauceUpdated._id)
               ))
               .catch((error) => res.status(400).json({
                 error
@@ -179,7 +131,9 @@ exports.likeSauce = (req, res, next) => {
               .status(200)
               .json({
                 message: "User has already disliked the sauce"
-              });
+              },
+              hateoasLinks(req, req.params.id)
+              );
           }
           break;
         case 0:
@@ -201,7 +155,8 @@ exports.likeSauce = (req, res, next) => {
                 }
               )
               .then((sauceUpdated) => res.status(200).json(
-                sauceUpdated
+                sauceUpdated,
+                hateoasLinks(req, sauceUpdated._id)
                 ))
               .catch((error) => res.status(400).json({
                 error
@@ -222,7 +177,8 @@ exports.likeSauce = (req, res, next) => {
                 }
               )
               .then((sauceUpdated) => res.status(200).json(
-                sauceUpdated
+                sauceUpdated,
+                hateoasLinks(req, sauceUpdated._id)
                 ))
               .catch((error) => res.status(400).json({
                 error
@@ -243,7 +199,8 @@ exports.likeSauce = (req, res, next) => {
                 }
               )
               .then((sauceUpdated) => res.status(200).json(
-                sauceUpdated
+                sauceUpdated,
+                hateoasLinks(req, sauceUpdated._id)
                 ))
               .catch((error) => res.status(400).json({
                 error
@@ -251,7 +208,8 @@ exports.likeSauce = (req, res, next) => {
           } else {
             res.status(200).json({
               message: "User's vote is already reset"
-            });
+            },
+            hateoasLinks(req, req.params.id));
           }
           break;
         case 1:
@@ -284,7 +242,8 @@ exports.likeSauce = (req, res, next) => {
                 new: true
               })
               .then((sauceUpdated) => res.status(200).json(
-                sauceUpdated
+                sauceUpdated,
+                hateoasLinks(req, sauceUpdated._id)
                 ))
               .catch((error) => res.status(400).json({
                 error
@@ -294,7 +253,8 @@ exports.likeSauce = (req, res, next) => {
               .status(200)
               .json({
                 message: "User has already liked the sauce"
-              });
+              },
+              hateoasLinks(req, req.params.id));
           }
           break;
       }
@@ -347,13 +307,12 @@ exports.updateSauce = (req, res, next) => {
           new: true
         })
         .then((sauceUpdated) => res.status(200).json(
-          sauceUpdated
+          sauceUpdated,
+          hateoasLinks(req, sauceUpdated._id)
         ))
         .catch((error) => res.status(400).json({
           error
         }));
-
-
     }
   });
 };
@@ -418,9 +377,9 @@ exports.reportSauce = (req, res, next) => {
           }, {
             new: true
           })
-          .then((sauceUpdated) => res.status(200).json({
+          .then((sauceUpdated) => res.status(200).json(
             sauceUpdated,
-            hateoasLinks: hateoasLinks(req, sauceUpdated._id)}))
+            hateoasLinks(req, sauceUpdated._id)))
           .catch((error) => res.status(400).json({
             error
           }))
@@ -433,4 +392,55 @@ exports.reportSauce = (req, res, next) => {
       }
     })
     .catch()
+}
+
+/**
+ * create hateoas links for sauces
+ */
+ const hateoasLinks = (req, id) => {
+  const URI = `${req.protocol}://${req.get("host") + "/api/sauces/"}`;
+  return [
+    {
+      rel: "readOne",
+      title: "ReadOne",
+      href: URI + id,
+      method: "GET"
+    },
+    {
+      rel: "readAll",
+      title: "ReadAll",
+      href: URI,
+      method: "GET"
+    },
+    {
+      rel: "create",
+      title: "Create",
+      href: URI,
+      method: "POST"
+    },
+    {
+      rel: "like",
+      title: "Like",
+      href: URI + id + "/like",
+      method: "POST"
+    },
+    {
+      rel: "update",
+      title: "Update",
+      href: URI + id,
+      method: "PUT"
+    },
+    {
+      rel: "delete",
+      title: "Delete",
+      href: URI + id,
+      method: "DELETE"
+    },
+    {
+      rel: "report",
+      title: "Report",
+      href: URI + id + "/report",
+      method: "POST"
+    }
+  ]
 }
