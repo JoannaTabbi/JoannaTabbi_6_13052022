@@ -1,5 +1,5 @@
 /**limits the numer of request per 15min to avoid the brute-force hacking.
- * When the limit is reached, it sends back the statusCode 4529 
+ * When the limit is reached, it sends back the statusCode 429 
  * ("too many requests") and the message (default option).
  */
 const rateLimit = require('express-rate-limit');
