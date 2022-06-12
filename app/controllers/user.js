@@ -9,28 +9,29 @@ require('dotenv').config();
  */
 
 function encryptMail(content) {
-  const parsedkey = cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY);
-  const iv = cryptoJS.enc.Utf8.parse(process.env.IV);
-  const enc = cryptoJS.AES.encrypt(content, parsedkey, {
+  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
+  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
+  const encrypted = cryptoJS.AES.encrypt(content, key, {
     iv: iv,
     mode: cryptoJS.mode.ECB,
     padding: cryptoJS.pad.Pkcs7
   });
-  return enc.toString();
+  return encrypted.toString();
 }
 /**
  * decrypts user's email 
  */
 function decryptMail(encryptedContent) {
-  const key = cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY);
-  const base64 = cryptoJS.enc.Base64.parse(encryptedContent);
-  const src = cryptoJS.enc.Base64.stringify(base64);
-  const dec = cryptoJS.AES.decrypt(src, key, {
+  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
+  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
+  const decrypted = cryptoJS.AES.decrypt(encryptedContent, key, {
+    iv: iv,
     mode: cryptoJS.mode.ECB,
     padding: cryptoJS.pad.Pkcs7
   });
-  return dec.toString(cryptoJS.enc.Utf8);
+  return decrypted.toString(cryptoJS.enc.Utf8);
 }
+
 
 /**
  * Register a new user. 
@@ -63,7 +64,7 @@ exports.signup = (req, res, next) => {
  * logs the user who's already registered. 
  * This method encrypts the email given in the request and controls if it is present 
  * in the Users collection, then checks if the password given matches the one assigned 
- * to the user in bd. If correct, returns userId and a token.
+ * to the user in database. If correct, returns userId and a token.
  */
 exports.login = (req, res, next) => {
   const emailEncrypted = encryptMail(req.body.email);
@@ -84,7 +85,6 @@ exports.login = (req, res, next) => {
               error: "Incorrect password"
             });
           }
-          user.email = decryptMail(user.email);
           res.status(200).json({
             userId: user._id,
             token: jwt.sign({ // creating a token for the new session; 
@@ -95,7 +95,8 @@ exports.login = (req, res, next) => {
               }
             ),
             User: user
-          });
+          },
+          hateoasLinks(req));
         })
         .catch((error) => res.status(500).json({
           error
@@ -120,7 +121,7 @@ exports.readUser = (req, res, next) => {
         });
       } else {
         user.email = decryptMail(user.email); // decrypts user's email
-        res.status(200).json(user);
+        res.status(200).json(user, hateoasLinks(req));
       }
     })
     .catch((error) => res.status(404).json({
@@ -174,7 +175,8 @@ exports.updateUser = (req, res, next) => {
             new: true
           })
           .then((userUpdated) => res.status(200).json(
-            userUpdated
+            userUpdated,
+            hateoasLinks(req)
           ))
           .catch((error) => {
             res.status(400).json({
@@ -241,7 +243,10 @@ exports.reportUser = (req, res, next) => {
           }, {
             new: true
           })
-          .then((userUpdated) => res.status(200).json(userUpdated))
+          .then((userUpdated) => res.status(200).json(
+            userUpdated,
+            hateoasLinks(req)
+          ))
           .catch((error) => res.status(400).json({
             error
           }))
@@ -254,4 +259,55 @@ exports.reportUser = (req, res, next) => {
       }
     })
     .catch()
+}
+
+/**
+ * create hateoas links 
+ */
+ const hateoasLinks = (req) => {
+  const URI = `${req.protocol}://${req.get("host") + "/api/auth"}`;
+  return [
+    {
+      rel: "signup",
+      title: "Signup",
+      href: URI + "/signup",
+      method: "POST"
+    },
+    {
+      rel: "login",
+      title: "Login",
+      href: URI + "/login",
+      method: "POST"
+    },
+    {
+      rel: "read",
+      title: "Read",
+      href: URI + "/",
+      method: "GET"
+    },
+    {
+      rel: "export",
+      title: "Export",
+      href: URI + "/export",
+      method: "GET"
+    },
+    {
+      rel: "update",
+      title: "Update",
+      href: URI + "/",
+      method: "PUT"
+    },
+    {
+      rel: "delete",
+      title: "Delete",
+      href: URI + "/",
+      method: "DELETE"
+    },
+    {
+      rel: "report",
+      title: "Report",
+      href: URI + "/report",
+      method: "POST"
+    }
+  ]
 }
