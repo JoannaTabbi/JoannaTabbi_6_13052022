@@ -12,7 +12,7 @@
 Icon
 
 # image files for sauces
-images/
+images/*
 
 
 # Thumbnails

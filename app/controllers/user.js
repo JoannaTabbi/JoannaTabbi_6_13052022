@@ -85,7 +85,6 @@ exports.login = (req, res, next) => {
               error: "Incorrect password"
             });
           }
-          user.email = decryptMail(user.email);
           res.status(200).json({
             userId: user._id,
             token: jwt.sign({ // creating a token for the new session; 
