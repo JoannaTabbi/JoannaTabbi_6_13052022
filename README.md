@@ -8,15 +8,19 @@ creating an API REST which is secure and in accordance with regulations.
 
 ## REQUIREMENTS
 
-Node.js, version: 16.15.0 LTS or later.
-npm version 8.9.0 or later. 
-MongoDB
+Node.js, version: 16.15.0 LTS or later  
+npm version 8.9.0 or later  
+MongoDB  
 API client e.g. POSTMAN
 
 
 ## INSTALLATION
 
-Clone this repository and open it in your code editor. From the root project directory, run *npm install* then *nodemon server*, the server will run on port 3000 (default).
+Clone this repository and open it in your code editor. From the root project directory, run *npm install* then *nodemon server*, the server will run on port 3000 (default). You can change the port by setting your own value for the PORT environment variable in .env file (see .env.exemple).
+
+## DATABASE
+
+The API works with MongoDB NoSQL database : don't forget to paste your MongoDB URI as a MONGO_URI value in .env file in order to connect to the database. 
 
 
 ## USE
