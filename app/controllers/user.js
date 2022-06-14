@@ -9,28 +9,30 @@ require('dotenv').config();
  */
 
 function encryptMail(content) {
-  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
-  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
-  const encrypted = cryptoJS.AES.encrypt(content, key, {
-    iv: iv,
-    mode: cryptoJS.mode.ECB,
-    padding: cryptoJS.pad.Pkcs7
+  const encrypted = cryptoJS.AES.encrypt(
+    content, 
+    cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY), 
+    {
+      iv: cryptoJS.enc.Utf8.parse(process.env.IV),
+      mode: cryptoJS.mode.ECB,
+      padding: cryptoJS.pad.Pkcs7
   });
   return encrypted.toString();
-}
+};
 /**
  * decrypts user's email 
  */
 function decryptMail(encryptedContent) {
-  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
-  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
-  const decrypted = cryptoJS.AES.decrypt(encryptedContent, key, {
-    iv: iv,
-    mode: cryptoJS.mode.ECB,
-    padding: cryptoJS.pad.Pkcs7
+  const decrypted = cryptoJS.AES.decrypt(
+    encryptedContent, 
+    cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY), 
+    {
+      iv: cryptoJS.enc.Utf8.parse(process.env.IV),
+      mode: cryptoJS.mode.ECB,
+      padding: cryptoJS.pad.Pkcs7
   });
   return decrypted.toString(cryptoJS.enc.Utf8);
-}
+};
 
 
 /**
@@ -141,7 +143,7 @@ exports.exportData = (req, res, next) => {
           error: new Error("User not found!")
         });
       } else {
-        user.email = decryptMail(user.email) // decrypts user's email
+        user.email = decryptMail(user.email); // decrypts user's email
         const text = user.toString(); // returns the user object to string format
         res.attachment("user-data.txt");
         res.type("txt");
