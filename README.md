@@ -21,7 +21,7 @@ Create .env file in the root directory, then copy/paste the content of the .dot.
 
 ## DATABASE
 
-The API works with MongoDB NoSQL database : If needed, sign up as indicated on the [MongoDB](https://www.mongodb.com/cloud/atlas/register) website and get your SRV address. Paste it to the MONGO_URI value in .env file in order to connect to the database: don't forget to replace <password> by your own one. 
+The API works with MongoDB NoSQL database : If needed, sign up as indicated on the [MongoDB](https://www.mongodb.com/cloud/atlas/register) website and get your SRV address. Paste it to the MONGO_URI value in .env file in order to connect to the database: don't forget to replace PASSWORD by your own one. 
 
 
 ## USE
