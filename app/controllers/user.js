@@ -9,28 +9,30 @@ require('dotenv').config();
  */
 
 function encryptMail(content) {
-  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
-  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
-  const encrypted = cryptoJS.AES.encrypt(content, key, {
-    iv: iv,
-    mode: cryptoJS.mode.ECB,
-    padding: cryptoJS.pad.Pkcs7
+  const encrypted = cryptoJS.AES.encrypt(
+    content, 
+    cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY), 
+    {
+      iv: cryptoJS.enc.Utf8.parse(process.env.IV),
+      mode: cryptoJS.mode.ECB,
+      padding: cryptoJS.pad.Pkcs7
   });
   return encrypted.toString();
-}
+};
 /**
  * decrypts user's email 
  */
 function decryptMail(encryptedContent) {
-  const key = cryptoJS.enc.Base64.parse(process.env.EMAIL_KEY);
-  const iv = cryptoJS.enc.Base64.parse(process.env.IV);
-  const decrypted = cryptoJS.AES.decrypt(encryptedContent, key, {
-    iv: iv,
-    mode: cryptoJS.mode.ECB,
-    padding: cryptoJS.pad.Pkcs7
+  const decrypted = cryptoJS.AES.decrypt(
+    encryptedContent, 
+    cryptoJS.enc.Utf8.parse(process.env.EMAIL_KEY), 
+    {
+      iv: cryptoJS.enc.Utf8.parse(process.env.IV),
+      mode: cryptoJS.mode.ECB,
+      padding: cryptoJS.pad.Pkcs7
   });
   return decrypted.toString(cryptoJS.enc.Utf8);
-}
+};
 
 
 /**
@@ -77,6 +79,7 @@ exports.login = (req, res, next) => {
           error: "User not found"
         });
       }
+      user.email = decryptMail(user.email)
       bcrypt
         .compare(req.body.password, user.password)
         .then((valid) => {
@@ -96,7 +99,7 @@ exports.login = (req, res, next) => {
             ),
             User: user
           },
-          hateoasLinks(req));
+          hateoasLinks(req, user._id));
         })
         .catch((error) => res.status(500).json({
           error
@@ -121,7 +124,7 @@ exports.readUser = (req, res, next) => {
         });
       } else {
         user.email = decryptMail(user.email); // decrypts user's email
-        res.status(200).json(user, hateoasLinks(req));
+        res.status(200).json(user, hateoasLinks(req, user._id));
       }
     })
     .catch((error) => res.status(404).json({
@@ -141,7 +144,7 @@ exports.exportData = (req, res, next) => {
           error: new Error("User not found!")
         });
       } else {
-        user.email = decryptMail(user.email) // decrypts user's email
+        user.email = decryptMail(user.email); // decrypts user's email
         const text = user.toString(); // returns the user object to string format
         res.attachment("user-data.txt");
         res.type("txt");
@@ -174,10 +177,12 @@ exports.updateUser = (req, res, next) => {
           }, {
             new: true
           })
-          .then((userUpdated) => res.status(200).json(
+          .then((userUpdated) => {
+            userUpdated.email = decryptMail(userUpdated.email);
+            res.status(200).json(
             userUpdated,
-            hateoasLinks(req)
-          ))
+            hateoasLinks(req, userUpdated._id)
+          )})
           .catch((error) => {
             res.status(400).json({
               error: error
@@ -245,7 +250,7 @@ exports.reportUser = (req, res, next) => {
           })
           .then((userUpdated) => res.status(200).json(
             userUpdated,
-            hateoasLinks(req)
+            hateoasLinks(req, userUpdated._id)
           ))
           .catch((error) => res.status(400).json({
             error
@@ -264,49 +269,49 @@ exports.reportUser = (req, res, next) => {
 /**
  * create hateoas links 
  */
- const hateoasLinks = (req) => {
-  const URI = `${req.protocol}://${req.get("host") + "/api/auth"}`;
+ const hateoasLinks = (req, id) => {
+  const URI = `${req.protocol}://${req.get("host") + "/api/auth/"}`;
   return [
     {
       rel: "signup",
       title: "Signup",
-      href: URI + "/signup",
+      href: URI + "signup",
       method: "POST"
     },
     {
       rel: "login",
       title: "Login",
-      href: URI + "/login",
+      href: URI + "login",
       method: "POST"
     },
     {
       rel: "read",
       title: "Read",
-      href: URI + "/",
+      href: URI,
       method: "GET"
     },
     {
       rel: "export",
       title: "Export",
-      href: URI + "/export",
+      href: URI + "export",
       method: "GET"
     },
     {
       rel: "update",
       title: "Update",
-      href: URI + "/",
+      href: URI,
       method: "PUT"
     },
     {
       rel: "delete",
       title: "Delete",
-      href: URI + "/",
+      href: URI,
       method: "DELETE"
     },
     {
       rel: "report",
       title: "Report",
-      href: URI + "/report",
+      href: URI + id + "/report/",
       method: "POST"
     }
   ]
