@@ -6,7 +6,7 @@ const password = require('../middleware/password');
 const rateLimiter = require('../middleware/rate-limiter');
 
 /**
- * searche for the specified sauce routes 
+ * searche for the specified user routes 
  * and methods given in the request, then call the callback functions
  * that match the request (read one, read all, create etc...)
  */

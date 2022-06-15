@@ -35,7 +35,7 @@ The following extra routes were developed that are not accessible by the Fronten
 |exportData   |GET   |/api/auth/export/   |prints user's data to a txt document   |
 |updateUser   |PUT   |/api/auth/   |updates user's data   |
 |deleteUser   |DELETE   |/api/auth/   |deletes all user's data   |
-|reportUser   |POST   |/api/auth/report/   |reports abusive content for a user id given.   |
+|reportUser   |POST   |/api/auth/:id/report/   |reports abusive content for a user id given.   |
 |reportSauce   |POST   |/api/sauces/:id/report/   |reports abusive content for a sauce id given.  |  
 
 Those routes are only accessible to a logged-in user (a token is required) and, except the report routes, the owner of the profile.
