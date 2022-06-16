@@ -340,14 +340,15 @@ exports.deleteSauce = (req, res, next) => {
       const filename = sauce.imageUrl.split("/images/")[1];
       fs.unlink(`images/${filename}`, () => {
         Sauce.deleteOne({
-            _id: req.params.id
-          })
+          _id: req.params.id
+        }
+          )
           .then(() => {
-            res.status(204).json()
+            res.status(204).json({})
           })
           .catch((error) => {
             res.status(400).json({
-              error: error
+              error
             });
           });
       });

@@ -200,7 +200,7 @@ exports.updateUser = (req, res, next) => {
  * If userId from the request does not match the one stored in database, the request
  * is not authorized.
  */
-exports.deleteUser = (req, res, next) => {
+ exports.deleteUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
@@ -212,7 +212,7 @@ exports.deleteUser = (req, res, next) => {
             _id: req.auth.userId
           })
           .then(() => {
-            res.status(204).json()
+            res.status(204).json({})
           })
           .catch((error) => {
             res.status(400).json({
